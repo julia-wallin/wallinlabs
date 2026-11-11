@@ -332,5 +332,40 @@
   </div>
 </footer>
 
+<script>
+  // Referral tracking: pass ?ref=... through to Stripe as client_reference_id
+  (function () {
+    var KEY = 'bm_ref';
+    var VALID = /^[A-Za-z0-9_-]{1,50}$/;
+    var ref = null;
+
+    try {
+      var fromUrl = new URLSearchParams(window.location.search).get('ref');
+      if (fromUrl && VALID.test(fromUrl)) ref = fromUrl;
+    } catch (e) {}
+
+    if (ref) {
+      try { localStorage.setItem(KEY, ref); } catch (e) {}
+    } else {
+      try {
+        var saved = localStorage.getItem(KEY);
+        if (saved && VALID.test(saved)) ref = saved;
+      } catch (e) {}
+    }
+
+    if (!ref) return;
+
+    var links = document.querySelectorAll('a[href*="buy.stripe.com"]');
+    for (var i = 0; i < links.length; i++) {
+      try {
+        var url = new URL(links[i].href);
+        if (url.hostname !== 'buy.stripe.com') continue;
+        url.searchParams.set('client_reference_id', ref);
+        links[i].href = url.toString();
+      } catch (e) {}
+    }
+  })();
+</script>
+
 </body>
 </html>
